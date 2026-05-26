@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Token Checker | SABBIRX007</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .creator {
+            background: rgba(255,255,255,0.1);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .card-header {
+            background: #2d3748;
+            color: white;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 15px;
+        }
+        .btn-clear {
+            background: #e53e3e;
+        }
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            flex: 1;
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid;
+        }
+        .stat-box.total { border-left-color: #4299e1; }
+        .stat-box.valid { border-left-color: #48bb78; }
+        .stat-box.invalid { border-left-color: #f56565; }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .results-table {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #edf2f7;
+            font-weight: bold;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-valid { background: #c6f6d5; color: #22543d; }
+        .badge-invalid { background: #fed7d7; color: #742a2a; }
+        .badge-suspended { background: #feebc8; color: #744210; }
+        .badge-limited { background: #fed7d7; color: #742a2a; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+        .warning-box {
+            background: #fed7d7;
+            border-left: 4px solid #e53e3e;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 GitHub Token & Account Checker</h1>
+            <p>Check Token Status | Account Suspension | Rate Limit</p>
+            <div class="creator">
+                👨‍💻 Developed by: <strong>ABDULLAH AL SABBIR</strong> | Telegram: <strong>@SABBIRX007</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                📝 Token Input
+            </div>
+            <div class="card-body">
+                <textarea id="tokens" rows="6" placeholder="Paste your GitHub tokens here...&#10;One token per line or comma separated"></textarea>
+                
+                <button class="btn" onclick="checkTokens()">🔍 Check Tokens</button>
+                <button class="btn btn-clear" onclick="clearAll()">🗑️ Clear</button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px;">Checking tokens...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="resultsCard" style="display: none;">
+            <div class="card-header">
+                📊 Results
+            </div>
+            <div class="card-body">
+                <div class="stats">
+                    <div class="stat-box total">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Total Tokens</div>
+                    </div>
+                    <div class="stat-box valid">
+                        <div class="stat-number" id="validCount">0</div>
+                        <div class="stat-label">Valid Tokens</div>
+                    </div>
+                    <div class="stat-box invalid">
+                        <div class="stat-number" id="invalidCount">0</div>
+                        <div class="stat-label">Invalid/Suspended</div>
+                    </div>
+                </div>
+
+                <div class="results-table">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr><th>#</th><th>Token (Masked)</th><th>Username</th><th>Status</th><th>Rate Limit</th><th>Message</th></tr>
+                        </thead>
+                        <tbody id="resultsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 - GitHub Token Checker | <a href="https://t.me/SABBIRX007" target="_blank">Telegram: @SABBIRX007</a></p>
+        </div>
+    </div>
+
+    <script>
+        async function checkTokens() {
+            const input = document.getElementById('tokens').value.trim();
+            if (!input) { alert('Please paste some tokens first!'); return; }
+
+            let tokens = [];
+            const lines = input.split(/\r?\n/);
+            for (const line of lines) {
+                if (line.includes(',')) {
+                    tokens.push(...line.split(',').map(t => t.trim()));
+                } else if (line.trim()) {
+                    tokens.push(line.trim());
+                }
+            }
+            tokens = [...new Set(tokens)];
+            
+            if (tokens.length === 0) { alert('No valid tokens found!'); return; }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('resultsCard').style.display = 'block';
+            
+            const results = [];
+            
+            for (let i = 0; i < tokens.length; i++) {
+                const result = await checkToken(tokens[i], i + 1);
+                results.push(result);
+                updateResults(results);
+                await sleep(500);
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function checkToken(token, index) {
+            const result = {
+                token: token,
+                masked: token.substring(0, 10) + '...' + token.substring(token.length - 4),
+                valid: false,
+                username: '',
+                rateLimit: 0,
+                status: 'Invalid',
+                message: '',
+                statusCode: 0
+            };
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    method: 'GET',
+                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+                });
+                
+                result.statusCode = response.status;
+                
+                if (response.status === 200) {
+                    const data = await response.json();
+                    result.valid = true;
+                    result.username = data.login;
+                    result.status = 'Valid';
+                    result.message = 'Token is working';
+                    
+                    const rateRes = await fetch('https://api.github.com/rate_limit', {
+                        headers: { 'Authorization': `token ${token}` }
+                    });
+                    if (rateRes.status === 200) {
+                        const rateData = await rateRes.json();
+                        result.rateLimit = rateData.resources.core.remaining;
+                        if (result.rateLimit < 100) {
+                            result.message = `⚠️ Low rate limit: ${result.rateLimit} remaining`;
+                        }
+                    }
+                } 
+                else if (response.status === 401) {
+                    result.status = 'Invalid';
+                    result.message = '❌ Token is invalid or expired';
+                }
+                else if (response.status === 403) {
+                    const error = await response.json();
+                    if (error.message && error.message.includes('suspended')) {
+                        result.status = 'Suspended';
+                        result.message = '🚫 Account is SUSPENDED! Contact GitHub Support';
+                    } else if (error.message && error.message.includes('rate limit')) {
+                        result.status = 'Rate Limited';
+                        result.message = '⚠️ Rate limit exceeded. Wait 1 hour';
+                    } else {
+                        result.status = 'Blocked';
+                        result.message = '🔒 Token or account is blocked';
+                    }
+                }
+                else if (response.status === 404) {
+                    result.status = 'Invalid';
+                    result.message = '❌ Token not found';
+                }
+                else {
+                    result.status = 'Error';
+                    result.message = `Error: ${response.status}`;
+                }
+            } catch (error) {
+                result.status = 'Network Error';
+                result.message = '🌐 Network error - check connection';
+            }
+            
+            return result;
+        }
+
+        function updateResults(results) {
+            const total = results.length;
+            const valid = results.filter(r => r.status === 'Valid').length;
+            const invalid = total - valid;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('validCount').textContent = valid;
+            document.getElementById('invalidCount').textContent = invalid;
+            
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            
+            results.forEach((r, idx) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = idx + 1;
+                row.insertCell(1).innerHTML = `<span style="font-family:monospace;font-size:11px;">${r.masked}</span>`;
+                row.insertCell(2).innerHTML = r.username ? `<a href="https://github.com/${r.username}" target="_blank" style="color:#4299e1;">@${r.username}</a>` : '-';
+                
+                let statusColor = '';
+                if (r.status === 'Valid') statusColor = '<span class="badge badge-valid">✅ Valid</span>';
+                else if (r.status === 'Suspended') statusColor = '<span class="badge badge-suspended">🚫 Suspended</span>';
+                else if (r.status === 'Rate Limited') statusColor = '<span class="badge badge-limited">⚠️ Rate Limited</span>';
+                else statusColor = '<span class="badge badge-invalid">❌ Invalid</span>';
+                row.insertCell(3).innerHTML = statusColor;
+                
+                let rateDisplay = r.rateLimit > 0 ? `${r.rateLimit} left` : '-';
+                if (r.rateLimit === 60) rateDisplay = '60 (unauthenticated)';
+                row.insertCell(4).innerHTML = rateDisplay;
+                row.insertCell(5).innerHTML = r.message;
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('tokens').value = '';
+            document.getElementById('resultsCard').style.display = 'none';
+        }
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    </script>
+</body>
+</html>
